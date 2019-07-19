@@ -1,6 +1,7 @@
 import React from 'react';
 import './App.css';
 import overlayTokenABI from './OverlayToken.js';
+import chainConfigs from './chainCofigs.js';
 import Web3 from 'web3';
 
 import { Container, Badge, Form, Row, Col, Button } from 'react-bootstrap';
@@ -50,9 +51,7 @@ export class App extends React.Component {
 			web3js = await new Web3(new Web3.providers.WebsocketProvider("wss://ropsten.infura.io/ws/v3/"));
 		}
 		const chainId = await web3js.eth.net.getId();
-		const contractAddress =
-		  (chainId == 3) ? '0x81d13559938ef896e4da8c5c13b7d1f4ce1feb27' :
-			(chainId == 5) ? '0x70f36e25d9cc6d813587ed106d28cd4195639a9c' : '0x0';
+		const contractAddress = chainConfigs[chainId] ? chainConfigs[chainId].overlayTokenAddres : chainConfigs[3].overlayTokenAddres;
 		this.setState({chain: chainId});
 
 		OverlayToken = await new web3js.eth.Contract(overlayTokenABI, contractAddress);
@@ -153,10 +152,11 @@ export class App extends React.Component {
       <div className="App">
         <Container>
 					<h1>Overlay Token</h1>
-					<h2 style={{color: "gray"}}>between ethereum and substrate</h2>
-					<h3><Badge variant="danger">{
-						(this.state.chain == 3) ? 'Ropsten' :
-						(this.state.chain == 5) ? 'Goerli' : 'Unknown Network'
+					<h2 style={{color: "grey"}}>between ethereum and substrate</h2>
+					<h3><Badge style={{
+								color: "white",
+								backgroundColor: chainConfigs[this.state.chain] ? chainConfigs[this.state.chain].backgroundColor : 'grey'}}>{
+							chainConfigs[this.state.chain] ? chainConfigs[this.state.chain].name : 'Unknown Network'
 						}</Badge></h3>
 					<hr />
 					<h3>
