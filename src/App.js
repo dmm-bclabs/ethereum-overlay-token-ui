@@ -10,6 +10,7 @@ var OverlayToken;
 
 export class App extends React.Component {
   state = {
+		chain: 0,
 		token: {
 			totalSupply: 0,
 			localSupply: 0,
@@ -48,7 +49,13 @@ export class App extends React.Component {
 		} else {
 			web3js = await new Web3(new Web3.providers.WebsocketProvider("wss://ropsten.infura.io/ws/v3/"));
 		}
-		OverlayToken = await new web3js.eth.Contract(overlayTokenABI, "0x81d13559938ef896e4da8c5c13b7d1f4ce1feb27");
+		const chainId = await web3js.eth.net.getId();
+		const contractAddress =
+		  (chainId == 3) ? '0x81d13559938ef896e4da8c5c13b7d1f4ce1feb27' :
+			(chainId == 5) ? '0x70f36e25d9cc6d813587ed106d28cd4195639a9c' : '0x0';
+		this.setState({chain: chainId});
+
+		OverlayToken = await new web3js.eth.Contract(overlayTokenABI, contractAddress);
 
 		const updateState = this.updateState.bind(this);
 		OverlayToken.events.allEvents({fromBlock: 'latest'}, function(error, result) {
@@ -147,7 +154,10 @@ export class App extends React.Component {
         <Container>
 					<h1>Overlay Token</h1>
 					<h2 style={{color: "gray"}}>between ethereum and substrate</h2>
-					<h3><Badge variant="danger">Ropsten</Badge></h3>
+					<h3><Badge variant="danger">{
+						(this.state.chain == 3) ? 'Ropsten' :
+						(this.state.chain == 5) ? 'Goerli' : 'Unknown Network'
+						}</Badge></h3>
 					<hr />
 					<h3>
 						<Badge variant="secondary" style={badgeStyle}>totalSupply: <span style={valueStyle}>{this.state.token.totalSupply}</span></Badge>
